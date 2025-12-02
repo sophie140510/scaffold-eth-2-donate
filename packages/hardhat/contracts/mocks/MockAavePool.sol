@@ -9,7 +9,7 @@ contract MockAavePool {
     using SafeERC20 for IERC20;
 
     struct ReserveData {
-        uint256 totalBalance;
+        uint256 balance; // aggregate liquidity including accrued interest
         uint256 lastUpdate;
         uint256 rateBps; // annual rate out of 10_000
         uint256 index; // ray-style accumulator (1e18 == 1x)
@@ -56,7 +56,7 @@ contract MockAavePool {
 
         IERC20(asset).safeTransferFrom(msg.sender, address(this), amount);
         userBalances[asset][onBehalfOf] += amount;
-        reserves[asset].totalBalance += amount;
+        reserves[asset].balance += amount;
 
         emit Deposit(asset, onBehalfOf, amount);
     }
@@ -70,7 +70,7 @@ contract MockAavePool {
         require(balance >= amount, "INSUFFICIENT_BALANCE");
 
         userBalances[asset][msg.sender] = balance - amount;
-        reserves[asset].totalBalance -= amount;
+        reserves[asset].balance -= amount;
         IERC20(asset).safeTransfer(to, amount);
 
         emit Withdraw(asset, to, amount);
@@ -85,7 +85,7 @@ contract MockAavePool {
 
     function getBalance(address asset) external view returns (uint256) {
         ReserveData memory reserve = _accruedView(asset);
-        return reserve.totalBalance;
+        return reserve.balance;
     }
 
     // --- testing helpers ---
@@ -96,7 +96,7 @@ contract MockAavePool {
 
         IERC20(asset).safeTransferFrom(msg.sender, address(this), amount);
         userBalances[asset][user] += amount;
-        reserves[asset].totalBalance += amount;
+        reserves[asset].balance += amount;
     }
 
     // --- accrual helpers ---
@@ -110,13 +110,14 @@ contract MockAavePool {
         }
 
         uint256 elapsed = block.timestamp - reserve.lastUpdate;
-        if (elapsed == 0 || reserve.totalBalance == 0 || reserve.rateBps == 0) {
+        if (elapsed == 0 || reserve.balance == 0 || reserve.rateBps == 0) {
             reserve.lastUpdate = block.timestamp;
             return;
         }
 
         uint256 interestFactor = (reserve.index * reserve.rateBps * elapsed) / (SECONDS_PER_YEAR * 10_000);
         reserve.index += interestFactor;
+        reserve.balance += (reserve.balance * interestFactor) / RAY;
         reserve.lastUpdate = block.timestamp;
     }
 
@@ -139,20 +140,21 @@ contract MockAavePool {
         uint256 accrued = (balance * (currentIndex - storedIndex)) / RAY;
         if (accrued > 0) {
             userBalances[asset][user] = balance + accrued;
-            reserves[asset].totalBalance += accrued;
+            reserves[asset].balance += accrued;
         }
         userIndex[asset][user] = currentIndex;
     }
 
     function _accruedView(address asset) internal view returns (ReserveData memory reserve) {
         reserve = reserves[asset];
-        if (reserve.index == 0 || reserve.totalBalance == 0 || reserve.rateBps == 0) {
+        if (reserve.index == 0 || reserve.balance == 0 || reserve.rateBps == 0) {
             return reserve;
         }
 
         uint256 elapsed = block.timestamp - reserve.lastUpdate;
         uint256 interestFactor = (reserve.index * reserve.rateBps * elapsed) / (SECONDS_PER_YEAR * 10_000);
         reserve.index += interestFactor;
+        reserve.balance += (reserve.balance * interestFactor) / RAY;
         reserve.lastUpdate = block.timestamp;
     }
 
