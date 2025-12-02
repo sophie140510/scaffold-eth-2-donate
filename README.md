@@ -17,6 +17,42 @@
 
 ![Debug Contracts tab](https://github.com/scaffold-eth/scaffold-eth-2/assets/55535804/b237af0c-5027-4849-a5c1-2e31495cccb1)
 
+## Yield architecture in this repo
+
+The donation flow in this scaffold template now includes a simple yield stack that demonstrates how to push deposits through an Aave-like pool and split harvests between strategies and treasury recipients.
+
+- **Vault**: mints/burns receipt shares on deposit/redeem and forwards assets into an Aave v3-compatible pool.
+- **Mock Aave v3 pool**: tracks balances and lets us simulate yield growth for testing.
+- **StrategySplitter**: receives harvested yield and splits it between a strategy wallet and the treasury splitter.
+- **TreasurySplitter**: swaps reward tokens (via a mock router/aggregator) and fans out proceeds to treasury recipients.
+
+### Flow diagrams
+
+#### Deposit → Aave → Strategy/Treasury harvest
+
+```mermaid
+flowchart LR
+    user[Donor] -->|deposit| vault
+    vault -->|supply| aave[Mock Aave v3 Pool]
+    aave -->|principal + yield| vault
+    vault -->|harvest yield| splitter[StrategySplitter]
+    splitter -->|strategy bps| strategyWallet[Strategy wallet]
+    splitter -->|treasury bps| treasury[TreasurySplitter]
+```
+
+#### Reward swap/distribution path
+
+```mermaid
+flowchart LR
+    splitter[StrategySplitter] --> treasury[TreasurySplitter]
+    treasury -->|swap rewards| router[Mock swap router]
+    router --> treasury
+    treasury -->|pro rata transfers| t1[Treasury A]
+    treasury --> t2[Treasury B]
+```
+
+These mocks make it easy to unit test mint/redeem, yield harvesting, reward swaps, and downstream treasury distributions without external dependencies.
+
 ## Requirements
 
 Before you begin, you need to install the following tools:
@@ -86,3 +122,31 @@ To know more about its features, check out our [website](https://scaffoldeth.io)
 We welcome contributions to Scaffold-ETH 2!
 
 Please see [CONTRIBUTING.MD](https://github.com/scaffold-eth/scaffold-eth-2/blob/main/CONTRIBUTING.md) for more information and guidelines for contributing to Scaffold-ETH 2.
+
+## Testing, frontend, and deployment recipes
+
+- **Foundry tests (mint/redeem, yield, swaps, and treasury distribution):**
+  - Install Foundry: `curl -L https://foundry.paradigm.xyz | bash && source ~/.foundry/bin/foundryup`
+  - Run tests: `cd packages/hardhat && forge test`
+- **Hardhat tests/gas reporting:** `cd packages/hardhat && yarn test`
+  - If your environment blocks compiler downloads, preinstall solc binaries or pin them in `hardhat.config.ts`.
+- **Local frontend:** keep the local chain running (`yarn chain`), then `cd packages/nextjs && yarn dev`.
+
+### Deploying to Base Sepolia/Base Mainnet
+
+The `deploy/01_deploy_yield_stack.ts` script wires together the vault, strategy splitter, treasury splitter, Aave pool, router, and (optionally) mock tokens. Provide real addresses in production via environment variables so the deploy script skips mocks.
+
+Key env vars:
+
+- `UNDERLYING_ASSET` – ERC20 to deposit (optional locally, required on mainnet)
+- `AAVE_POOL` – Aave v3 pool (Base)
+- `SWAP_ROUTER` – aggregator/router used by `TreasurySplitter`
+- `TREASURY_RECIPIENTS` – comma-separated addresses
+- `TREASURY_SPLITS` – comma-separated bps totaling 10_000
+- `STRATEGY_RECIPIENT` and `STRATEGY_BPS` – strategy share target and bps
+
+Commands:
+
+- Base Sepolia: `cd packages/hardhat && yarn deploy --network baseSepolia --tags YieldStack`
+- Base Mainnet: `cd packages/hardhat && yarn deploy --network base --tags YieldStack`
+- Verification (after deploying): `cd packages/hardhat && yarn hardhat run scripts/verifyStack.ts --network baseSepolia`
