@@ -2,9 +2,11 @@
 pragma solidity ^0.8.20;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /// @notice Extremely small Aave v3 style pool mock with linear interest.
 contract MockAavePool {
+    using SafeERC20 for IERC20;
     struct ReserveData {
         uint256 balance;
         uint256 lastUpdate;
@@ -27,7 +29,7 @@ contract MockAavePool {
 
     function deposit(address asset, uint256 amount, address onBehalfOf) external {
         _accrue(asset);
-        IERC20(asset).transferFrom(msg.sender, address(this), amount);
+        IERC20(asset).safeTransferFrom(msg.sender, address(this), amount);
         reserves[asset].balance += amount;
         emit Deposit(asset, onBehalfOf, amount);
     }
@@ -40,7 +42,7 @@ contract MockAavePool {
             amount = available;
         }
         reserve.balance -= amount;
-        IERC20(asset).transfer(to, amount);
+        IERC20(asset).safeTransfer(to, amount);
         emit Withdraw(asset, to, amount);
         return amount;
     }
