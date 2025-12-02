@@ -35,8 +35,7 @@ contract AaveV3Strategy is IStrategy {
     }
 
     function deposit(uint256 amount) external override onlyController returns (uint256) {
-        asset.safeApprove(address(pool), 0);
-        asset.safeApprove(address(pool), amount);
+        SafeERC20.forceApprove(asset, address(pool), amount);
         pool.deposit(address(asset), amount, address(this));
         return amount;
     }
