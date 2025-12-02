@@ -4,11 +4,14 @@ import { Wallet } from "ethers";
 import password from "@inquirer/password";
 import { spawn } from "child_process";
 import { config } from "hardhat";
+import { ensureLocalCompilerCache } from "./ensureLocalCompiler";
 
 /**
  * Unencrypts the private key and runs the hardhat deploy command
  */
 async function main() {
+  await ensureLocalCompilerCache();
+
   const networkIndex = process.argv.indexOf("--network");
   const networkName = networkIndex !== -1 ? process.argv[networkIndex + 1] : config.defaultNetwork;
 
