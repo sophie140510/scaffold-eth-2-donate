@@ -1,0 +1,11 @@
+[profile.default]
+src = 'contracts'
+out = 'out'
+test = 'foundry/test'
+libraries = []
+libs = ['lib', 'node_modules']
+remappings = ['@openzeppelin/=node_modules/@openzeppelin/']
+evm_version = 'shanghai'
+
+[fmt]
+line_length = 120
