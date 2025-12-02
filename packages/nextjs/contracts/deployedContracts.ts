@@ -4,6 +4,192 @@
  */
 import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
-const deployedContracts = {} as const;
+const deployedContracts = {
+  31337: {
+    USDC: {
+      address: "0x0000000000000000000000000000000000000001",
+      abi: [
+        {
+          type: "function",
+          stateMutability: "view",
+          name: "balanceOf",
+          inputs: [{ name: "account", type: "address", internalType: "address" }],
+          outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+        },
+        {
+          type: "function",
+          stateMutability: "nonpayable",
+          name: "approve",
+          inputs: [
+            { name: "spender", type: "address", internalType: "address" },
+            { name: "amount", type: "uint256", internalType: "uint256" },
+          ],
+          outputs: [{ name: "", type: "bool", internalType: "bool" }],
+        },
+      ],
+    },
+    DOUGH: {
+      address: "0x0000000000000000000000000000000000000002",
+      abi: [
+        {
+          type: "function",
+          stateMutability: "view",
+          name: "balanceOf",
+          inputs: [{ name: "account", type: "address", internalType: "address" }],
+          outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+        },
+        {
+          type: "function",
+          stateMutability: "nonpayable",
+          name: "approve",
+          inputs: [
+            { name: "spender", type: "address", internalType: "address" },
+            { name: "amount", type: "uint256", internalType: "uint256" },
+          ],
+          outputs: [{ name: "", type: "bool", internalType: "bool" }],
+        },
+        {
+          type: "function",
+          stateMutability: "nonpayable",
+          name: "burn",
+          inputs: [{ name: "amount", type: "uint256", internalType: "uint256" }],
+          outputs: [],
+        },
+      ],
+    },
+    DoughHub: {
+      address: "0x0000000000000000000000000000000000000003",
+      abi: [
+        {
+          type: "function",
+          stateMutability: "view",
+          name: "getProtocolStats",
+          inputs: [],
+          outputs: [
+            { name: "tvl", type: "uint256", internalType: "uint256" },
+            { name: "minted", type: "uint256", internalType: "uint256" },
+            { name: "pendingRewards", type: "uint256", internalType: "uint256" },
+            { name: "treasuryBalance", type: "uint256", internalType: "uint256" },
+          ],
+        },
+        {
+          type: "function",
+          stateMutability: "view",
+          name: "getAaveData",
+          inputs: [],
+          outputs: [
+            { name: "supplyApy", type: "uint256", internalType: "uint256" },
+            { name: "totalSupplied", type: "uint256", internalType: "uint256" },
+            { name: "totalBorrowed", type: "uint256", internalType: "uint256" },
+          ],
+        },
+        {
+          type: "function",
+          stateMutability: "view",
+          name: "getRedeemableBreakdown",
+          inputs: [],
+          outputs: [
+            { name: "redeemable", type: "uint256", internalType: "uint256" },
+            { name: "nonRedeemable", type: "uint256", internalType: "uint256" },
+            { name: "treasury", type: "uint256", internalType: "uint256" },
+          ],
+        },
+        {
+          type: "function",
+          stateMutability: "view",
+          name: "owner",
+          inputs: [],
+          outputs: [{ name: "", type: "address", internalType: "address" }],
+        },
+        {
+          type: "function",
+          stateMutability: "view",
+          name: "governance",
+          inputs: [],
+          outputs: [{ name: "", type: "address", internalType: "address" }],
+        },
+        {
+          type: "function",
+          stateMutability: "nonpayable",
+          name: "depositAndMint",
+          inputs: [{ name: "amount", type: "uint256", internalType: "uint256" }],
+          outputs: [{ name: "minted", type: "uint256", internalType: "uint256" }],
+        },
+        {
+          type: "function",
+          stateMutability: "nonpayable",
+          name: "redeemAndWithdraw",
+          inputs: [{ name: "shares", type: "uint256", internalType: "uint256" }],
+          outputs: [{ name: "withdrawn", type: "uint256", internalType: "uint256" }],
+        },
+        {
+          type: "function",
+          stateMutability: "nonpayable",
+          name: "setDexSlippageBps",
+          inputs: [{ name: "slippageBps", type: "uint256", internalType: "uint256" }],
+          outputs: [],
+        },
+        {
+          type: "function",
+          stateMutability: "nonpayable",
+          name: "setDexPath",
+          inputs: [{ name: "path", type: "address[]", internalType: "address[]" }],
+          outputs: [],
+        },
+        {
+          type: "function",
+          stateMutability: "nonpayable",
+          name: "harvest",
+          inputs: [],
+          outputs: [],
+        },
+        {
+          type: "function",
+          stateMutability: "nonpayable",
+          name: "swapRewards",
+          inputs: [],
+          outputs: [],
+        },
+        {
+          type: "function",
+          stateMutability: "nonpayable",
+          name: "contributeToTreasury",
+          inputs: [],
+          outputs: [],
+        },
+      ],
+    },
+    StrategySplitter: {
+      address: "0x0000000000000000000000000000000000000004",
+      abi: [
+        {
+          type: "function",
+          stateMutability: "nonpayable",
+          name: "updateRecipients",
+          inputs: [
+            { name: "recipients", type: "address[]", internalType: "address[]" },
+            { name: "weights", type: "uint256[]", internalType: "uint256[]" },
+          ],
+          outputs: [],
+        },
+      ],
+    },
+    TreasurySplitter: {
+      address: "0x0000000000000000000000000000000000000005",
+      abi: [
+        {
+          type: "function",
+          stateMutability: "nonpayable",
+          name: "updateRecipients",
+          inputs: [
+            { name: "recipients", type: "address[]", internalType: "address[]" },
+            { name: "weights", type: "uint256[]", internalType: "uint256[]" },
+          ],
+          outputs: [],
+        },
+      ],
+    },
+  },
+} as const;
 
 export default deployedContracts satisfies GenericContractsDeclaration;
